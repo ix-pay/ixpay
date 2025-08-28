@@ -105,20 +105,25 @@ func main() {
 ```
 
 ### 请求token
+```
 Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTY2NTMxMTUsInVzZXJfaWQiOjYxNjI2OTY0MzA2MDg3NTI2NH0.RlVOKvJaGRtabc5FzDVCFnODKXGbvXNmARB9zSyClXA
+```
 
 ### 文档生成命令
 安装swag
+```
 // go install github.com/swaggo/swag/cmd/swag@latest
 go install github.com/swaggo/swag/cmd/swag@v1.8.12
-
+```
+```
 swag init -g main.go --output docs --parseDependency --parseInternal
+```
 [http://127.0.0.1:8989/swagger/index.html]http://127.0.0.1:8989/swagger/index.html
 
 ## 热加载
-
+```
 go install github.com/air-verse/air@latest
-
+```
 // .vscode/launch.json
 ```
 {
