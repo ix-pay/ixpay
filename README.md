@@ -119,7 +119,7 @@ go install github.com/swaggo/swag/cmd/swag@v1.8.12
 swag init -g main.go --output docs --parseDependency --parseInternal
 ```
 
-<http://127.0.0.1:8989/swagger/index.html>{target="_blank"}
+<http://127.0.0.1:8989/swagger/index.html>
 
 ## 热加载
 ```
