@@ -102,17 +102,11 @@ paths:
       summary: 登录
       tags:
       - 基础功能
-  /auth/profile/{userId}:
+  /auth/profile:
     get:
       consumes:
       - application/json
       description: 获取用户信息
-      parameters:
-      - description: 用户ID
-        in: path
-        name: userId
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -325,7 +319,7 @@ paths:
       - 支付模块
 securityDefinitions:
   BearerAuth:
-    in: header
+    in: header [Bearer ]
     name: Authorization
     type: apiKey
 swagger: "2.0"

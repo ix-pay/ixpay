@@ -6,10 +6,20 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ix-pay/ixpay/container"
 	"github.com/ix-pay/ixpay/models"
 	"github.com/ix-pay/ixpay/utils"
-	"golang.org/x/crypto/bcrypt"
 )
+
+type authController struct {
+	ctr *container.Container
+}
+
+func NewAuthController(ctr *container.Container) *authController {
+	return &authController{
+		ctr: ctr,
+	}
+}
 
 // Login
 // @Summary 登录
@@ -21,7 +31,7 @@ import (
 // @Success 200 {object} utils.RespData{data=models.TokenUser} "成功响应"
 // @Failure 400 {object} utils.RespData{data=string} "失败消息"
 // @Router /auth/login [post]
-func Login(c *gin.Context) {
+func (con *authController) Login(c *gin.Context) {
 	var creds models.LoginCredentials
 	if err := c.ShouldBindJSON(&creds); err != nil {
 		utils.Error(c, http.StatusBadRequest, fmt.Sprintf("参数异常：%s\n", err.Error()))
@@ -29,13 +39,14 @@ func Login(c *gin.Context) {
 	}
 
 	// 验证用户逻辑（示例）
-	user, err := models.AuthenticateUser(creds.Account, creds.Password)
+	us := con.ctr.GetUserService()
+	user, err := us.AuthenticateUser(creds.Account, creds.Password)
 	if err != nil {
 		utils.Error(c, http.StatusUnauthorized, fmt.Sprintf("认证失败：%s\n", err.Error()))
 		return
 	}
-
-	token, err := utils.GenerateJWT(user.ID)
+	j := con.ctr.GetJwt()
+	token, err := j.GenerateJWT(user.ID)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, fmt.Sprintf("生成token失败：%s\n", err.Error()))
 		return
@@ -61,24 +72,15 @@ func Login(c *gin.Context) {
 // @Success 200 {object} utils.RespData{data=models.ProfileUser} "成功响应"
 // @Failure 400 {object} utils.RespData{data=string} "失败消息"
 // @Router /auth/register [post]
-func Register(c *gin.Context) {
+func (con *authController) Register(c *gin.Context) {
 	var newUser models.User
 	if err := c.ShouldBindJSON(&newUser); err != nil {
 		utils.Error(c, http.StatusBadRequest, fmt.Sprintf("参数异常：%s\n", err.Error()))
 		return
 	}
 
-	// 密码加密
-	hashed, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
-	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, fmt.Sprintf("密码加密失败：%s\n", err.Error()))
-		return
-	}
-	newUser.Password = string(hashed)
-
-	// 模拟数据库存储
-	if err := models.DB.Create(&newUser).Error; err != nil {
-		utils.Error(c, http.StatusInternalServerError, fmt.Sprintf("用户已存在：%s\n", err.Error()))
+	us := con.ctr.GetUserService()
+	if err := us.Register(c, &newUser); err != nil {
 		return
 	}
 
@@ -96,13 +98,12 @@ func Register(c *gin.Context) {
 // @Security BearerAuth
 // @Accept json
 // @Produce json
-// @Param userId path string true "用户ID"
 // @Success 200 {object} utils.RespData{data=models.ProfileUser} "成功响应"
 // @Failure 400 {object} utils.RespData{data=string} "失败消息"
-// @Router /auth/profile/{userId} [get]
-func GetProfile(c *gin.Context) {
-	userID := c.Param("userId") // 获取路由参数
-	if userID == "" {
+// @Router /auth/profile [get]
+func (con *authController) GetProfile(c *gin.Context) {
+	userID, exists := c.Get("userId")
+	if !exists {
 		utils.Error(c, http.StatusUnauthorized, "无效用户")
 		return
 	}

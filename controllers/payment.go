@@ -5,8 +5,19 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ix-pay/ixpay/container"
 	"github.com/ix-pay/ixpay/utils"
 )
+
+type paymentController struct {
+	ctr *container.Container
+}
+
+func NewPaymentController(ctr *container.Container) *paymentController {
+	return &paymentController{
+		ctr: ctr,
+	}
+}
 
 // CreatePayment
 // @Summary 创建支付定单
@@ -19,7 +30,7 @@ import (
 // @Success 200 {object} utils.RespData{data=models.ProfileUser} "成功响应"
 // @Failure 400 {object} utils.RespData{data=string} "失败消息"
 // @Router /payments/create [post]
-func CreatePayment(c *gin.Context) {
+func (con *paymentController) CreatePayment(c *gin.Context) {
 	log.Printf("controllers=%s\n", "创建支付定单")
 	// 实现创建支付逻辑
 	utils.Success(c, http.StatusOK, "", "创建支付定单")
@@ -36,7 +47,7 @@ func CreatePayment(c *gin.Context) {
 // @Success 200 {object} utils.RespData{data=models.ProfileUser} "成功响应"
 // @Failure 400 {object} utils.RespData{data=string} "失败消息"
 // @Router /payments/{id} [get]
-func GetPayment(c *gin.Context) {
+func (con *paymentController) GetPayment(c *gin.Context) {
 	log.Printf("controllers=%s\n", "获取支付定单")
 	// 实现获取支付详情
 	utils.Success(c, http.StatusOK, "", "获取支付定单")
@@ -53,7 +64,7 @@ func GetPayment(c *gin.Context) {
 // @Success 200 {object} utils.RespData{data=models.ProfileUser} "成功响应"
 // @Failure 400 {object} utils.RespData{data=string} "失败消息"
 // @Router /payments/list [get]
-func ListPayments(c *gin.Context) {
+func (con *paymentController) ListPayments(c *gin.Context) {
 	log.Printf("controllers=%s\n", "获取支付定单列表")
 	// 实现支付列表查询
 	utils.Success(c, http.StatusOK, "", "获取支付定单列表")
@@ -70,7 +81,7 @@ func ListPayments(c *gin.Context) {
 // @Success 200 {object} utils.RespData{data=models.ProfileUser} "成功响应"
 // @Failure 400 {object} utils.RespData{data=string} "失败消息"
 // @Router /payments/{id}/status [put]
-func UpdatePaymentStatus(c *gin.Context) {
+func (con *paymentController) UpdatePaymentStatus(c *gin.Context) {
 	log.Printf("controllers=%s\n", "更新支付定单状态")
 	// 实现支付状态更新
 	utils.Success(c, http.StatusOK, "", "更新支付定单状态")

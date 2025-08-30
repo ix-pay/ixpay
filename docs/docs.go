@@ -80,7 +80,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/profile/{userId}": {
+        "/auth/profile": {
             "get": {
                 "security": [
                     {
@@ -98,15 +98,6 @@ const docTemplate = `{
                     "基础功能"
                 ],
                 "summary": "获取用户信息",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "用户ID",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "成功响应",
@@ -571,7 +562,7 @@ const docTemplate = `{
         "BearerAuth": {
             "type": "apiKey",
             "name": "Authorization",
-            "in": "header"
+            "in": "header [Bearer ]"
         }
     }
 }`

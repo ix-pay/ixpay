@@ -28,6 +28,7 @@ const (
 	machineBits   uint8 = 10
 	sequenceBits  uint8 = 12
 
+	maxTimestamp int64 = -1 ^ (-1 << timestampBits)
 	maxMachineID int64 = -1 ^ (-1 << machineBits)
 	maxSequence  int64 = -1 ^ (-1 << sequenceBits)
 
@@ -58,8 +59,14 @@ func (s *Snowflake) Generate() int64 {
 	defer s.mu.Unlock()
 
 	current := time.Now().UnixMilli()
+	timestamp := current - epoch
+
+	if timestamp > maxTimestamp {
+		panic("时间戳溢出")
+	}
+
 	if current < s.lastStamp {
-		panic("clock moved backwards")
+		panic("时钟倒转了")
 	}
 
 	if current == s.lastStamp {
@@ -74,7 +81,7 @@ func (s *Snowflake) Generate() int64 {
 	}
 
 	s.lastStamp = current
-	return ((current - epoch) << timestampShift) |
+	return (timestamp << timestampShift) |
 		(s.machineID << machineShift) |
 		s.sequence
 }

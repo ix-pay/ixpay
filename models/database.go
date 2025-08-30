@@ -24,6 +24,14 @@ func InitDB(cfg config.DBConfig) error {
 	return nil
 }
 
+func CloseDB() error {
+	if DB != nil {
+		sqlDB, _ := DB.DB()
+		return sqlDB.Close()
+	}
+	return nil
+}
+
 func buildDSN(cfg config.DBConfig) string {
 	return "host=" + cfg.Host +
 		" user=" + cfg.User +

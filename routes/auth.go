@@ -2,15 +2,18 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/ix-pay/ixpay/container"
 	"github.com/ix-pay/ixpay/controllers"
 	"github.com/ix-pay/ixpay/middleware"
 )
 
-func SetupAuthRoutes(r *gin.RouterGroup) {
+func SetupAuthRoutes(r *gin.RouterGroup, ctr *container.Container) {
+	con := controllers.NewAuthController(ctr)
+
 	auth := r.Group("/auth")
 	{
-		auth.POST("/login", controllers.Login)
-		auth.POST("/register", controllers.Register)
-		auth.GET("/profile/:userId", middleware.JWTAuth(), controllers.GetProfile)
+		auth.POST("/login", con.Login)
+		auth.POST("/register", con.Register)
+		auth.GET("/profile", middleware.JWTAuth(ctr), con.GetProfile)
 	}
 }

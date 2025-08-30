@@ -7,10 +7,11 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/ix-pay/ixpay/container"
 	"github.com/ix-pay/ixpay/utils"
 )
 
-func JWTAuth() gin.HandlerFunc {
+func JWTAuth(ctr *container.Container) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
@@ -30,7 +31,7 @@ func JWTAuth() gin.HandlerFunc {
 
 		// 4. 解析前二次验证
 		log.Printf("待解析的realToken=%s\n", realToken)
-		token, err := utils.ParseJWT(realToken)
+		token, err := ctr.GetJwt().ParseJWT(realToken)
 
 		if err != nil {
 			log.Printf("解析错误详情: %v\n", err) // 关键错误日志
@@ -52,6 +53,22 @@ func JWTAuth() gin.HandlerFunc {
 			// c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "无效token"})
 			return
 		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			utils.AbortError(c, http.StatusUnauthorized, "无效claims格式")
+			return
+		}
+
+		// 安全获取user_id
+		userID, exists := claims["user_id"]
+		if !exists {
+			utils.AbortError(c, http.StatusUnauthorized, "token缺少user_id字段")
+			return
+		}
+		// 设置用户ID
+		c.Set("userId", userID)
+		log.Printf("userId=%s\n", userID)
 
 		c.Next()
 	}

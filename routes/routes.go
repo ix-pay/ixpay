@@ -6,13 +6,15 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ix-pay/ixpay/container"
 	"github.com/ix-pay/ixpay/middleware"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-func SetupRoutes() *gin.Engine {
+func SetupRoutes(ctr *container.Container) *gin.Engine {
+
 	// 初始化Gin引擎
-	r := gin.Default()
+	engine := gin.Default()
 
 	// 创建日志文件
 	// file, _ := os.Create("logs/ixpay.log")
@@ -34,16 +36,16 @@ func SetupRoutes() *gin.Engine {
 	log.SetOutput(file)
 
 	// 注册中间件
-	r.Use(middleware.CORS())
+	engine.Use(middleware.CORS())
 	// 注册中间件
-	r.Use(middleware.Logs())
+	engine.Use(middleware.Logs())
 
-	api := r.Group("/api/v1")
+	api := engine.Group("/api/v1")
 	{
 
-		SetupAuthRoutes(api)
-		SetupPaymentsRoutes(api)
+		SetupAuthRoutes(api, ctr)
+		SetupPaymentsRoutes(api, ctr)
 	}
 
-	return r
+	return engine
 }

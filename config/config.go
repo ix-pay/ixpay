@@ -7,8 +7,10 @@ import (
 )
 
 type Config struct {
-	DB        DBConfig
-	MachineId string
+	DB         DBConfig
+	MachineId  string
+	ServerPort string
+	JWTSecret  string
 }
 
 type DBConfig struct {
@@ -35,7 +37,9 @@ func Load() (*Config, error) {
 			DBName:   getEnv("DB_NAME", "ixpay"),
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
 		},
-		MachineId: getEnv("MACHINE_ID", "1"),
+		MachineId:  getEnv("MACHINE_ID", "1"),
+		ServerPort: getEnv("SERVER_PORT", "8989"),
+		JWTSecret:  getEnv("JWT_SECRET", "XgpHzFtngBNuyCnGXVZYlf5znjkXWsDs"),
 	}, nil
 }
 

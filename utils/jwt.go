@@ -1,25 +1,35 @@
 package utils
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/ix-pay/ixpay/config"
 )
 
-var jwtKey = []byte("your_secret_key")
+type JwtUtil struct {
+	jwtKey []byte
+}
 
-func GenerateJWT(userID int64) (string, error) {
+func SetupJwt(cfg *config.Config) *JwtUtil {
+	return &JwtUtil{
+		jwtKey: []byte(cfg.JWTSecret),
+	}
+}
+
+func (j *JwtUtil) GenerateJWT(userID int64) (string, error) {
 	claims := jwt.MapClaims{
-		"user_id": userID,
+		"user_id": strconv.FormatInt(userID, 10),
 		"exp":     time.Now().Add(time.Hour * 72).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtKey)
+	return token.SignedString(j.jwtKey)
 }
 
-func ParseJWT(tokenString string) (*jwt.Token, error) {
+func (j *JwtUtil) ParseJWT(tokenString string) (*jwt.Token, error) {
 	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
+		return j.jwtKey, nil
 	})
 }
