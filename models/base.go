@@ -3,7 +3,6 @@ package models
 import (
 	"time"
 
-	"github.com/ix-pay/ixpay/config"
 	"github.com/ix-pay/ixpay/utils"
 	"gorm.io/gorm"
 )
@@ -16,11 +15,13 @@ type BaseModel struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
-var sf *utils.Snowflake
+var (
+	sf *utils.Snowflake
+)
 
-func InitSnowflake(cfg *config.Config) error {
+func InitSnowflake(MachineId string) error {
 	var err error
-	sf, err = utils.NewSnowflake(cfg)
+	sf, err = utils.SetupSnowflake(MachineId)
 	return err
 }
 

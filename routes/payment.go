@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupPaymentsRoutes(r *gin.RouterGroup, ctr *container.Container) {
+func SetupPaymentsRoutes(r *gin.RouterGroup, ctr container.IContainer) {
 	con := controllers.NewPaymentController(ctr)
 	payments := r.Group("/payments")
 	{

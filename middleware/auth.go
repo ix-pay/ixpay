@@ -11,7 +11,7 @@ import (
 	"github.com/ix-pay/ixpay/utils"
 )
 
-func JWTAuth(ctr *container.Container) gin.HandlerFunc {
+func JWTAuth(ctr container.IContainer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {

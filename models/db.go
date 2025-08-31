@@ -6,9 +6,11 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+var (
+	DB *gorm.DB
+)
 
-func InitDB(cfg config.DBConfig) error {
+func SetupDB(cfg config.DBConfig) error {
 	var err error
 	dsn := buildDSN(cfg)
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})

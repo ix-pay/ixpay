@@ -8,6 +8,7 @@ import (
 	"github.com/ix-pay/ixpay/container"
 	"github.com/ix-pay/ixpay/models"
 	"github.com/ix-pay/ixpay/routes"
+	"github.com/ix-pay/ixpay/service"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -19,24 +20,33 @@ type App struct {
 
 func SetupApp() (*App, error) {
 	// 初始化容器
-	ctr := &container.Container{}
-	ctr.Init()
+	ctr := container.SetupContainer()
+
+	// 注册服务
+	ctr.Register("AuthService", func() interface{} {
+		return service.NewAuthService()
+	})
+	ctr.Register("UserService", func() interface{} {
+		return service.NewUserService()
+	})
+	ctr.Register("PaymentService", func() interface{} {
+		return service.NewPaymentService()
+	})
 
 	cfg := ctr.GetConfig()
 
 	// 初始化数据库
-	err := models.InitDB(cfg.DB)
+	err := models.SetupDB(cfg.DB)
 	if err != nil {
 		log.Fatal("数据库连接失败:", err)
 	}
 
 	// 初始化雪花算法节点（节点号0-1023）
-	if err := models.InitSnowflake(cfg); err != nil {
+	if err := models.InitSnowflake(cfg.MachineId); err != nil {
 		panic(err)
 	}
 
-	// 创建Gin引擎
-	// 加载路由
+	// 注册路由
 	engine := routes.SetupRoutes(ctr)
 
 	// 开发环境启用文档
@@ -45,12 +55,11 @@ func SetupApp() (*App, error) {
 		engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 	}
 
-	// 注册路由
-
 	return &App{engine: engine, cfg: cfg}, nil
 }
 
 func (a *App) Run() error {
 	port := a.cfg.ServerPort
+	a.engine.SetTrustedProxies(nil)
 	return a.engine.Run(":" + port)
 }

@@ -5,12 +5,10 @@ import (
 	"strconv"
 	"sync"
 	"time"
-
-	"github.com/ix-pay/ixpay/config"
 )
 
-func NewSnowflake(cfg *config.Config) (*Snowflake, error) {
-	machineID, _ := strconv.ParseInt(cfg.MachineId, 10, 64)
+func SetupSnowflake(MachineId string) (*Snowflake, error) {
+	machineID, _ := strconv.ParseInt(MachineId, 10, 64)
 	if machineID < 0 {
 		return nil, errors.New("机器码异常")
 	}

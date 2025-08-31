@@ -7,7 +7,7 @@ import (
 	"github.com/ix-pay/ixpay/middleware"
 )
 
-func SetupAuthRoutes(r *gin.RouterGroup, ctr *container.Container) {
+func SetupAuthRoutes(r *gin.RouterGroup, ctr container.IContainer) {
 	con := controllers.NewAuthController(ctr)
 
 	auth := r.Group("/auth")

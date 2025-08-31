@@ -10,10 +10,10 @@ import (
 )
 
 type paymentController struct {
-	ctr *container.Container
+	ctr container.IContainer
 }
 
-func NewPaymentController(ctr *container.Container) *paymentController {
+func NewPaymentController(ctr container.IContainer) *paymentController {
 	return &paymentController{
 		ctr: ctr,
 	}

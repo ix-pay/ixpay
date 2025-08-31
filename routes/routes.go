@@ -11,7 +11,7 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-func SetupRoutes(ctr *container.Container) *gin.Engine {
+func SetupRoutes(ctr container.IContainer) *gin.Engine {
 
 	// 初始化Gin引擎
 	engine := gin.Default()
@@ -42,7 +42,6 @@ func SetupRoutes(ctr *container.Container) *gin.Engine {
 
 	api := engine.Group("/api/v1")
 	{
-
 		SetupAuthRoutes(api, ctr)
 		SetupPaymentsRoutes(api, ctr)
 	}

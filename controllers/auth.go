@@ -8,14 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ix-pay/ixpay/container"
 	"github.com/ix-pay/ixpay/models"
+	"github.com/ix-pay/ixpay/service"
 	"github.com/ix-pay/ixpay/utils"
 )
 
 type authController struct {
-	ctr *container.Container
+	ctr container.IContainer
 }
 
-func NewAuthController(ctr *container.Container) *authController {
+func NewAuthController(ctr container.IContainer) *authController {
 	return &authController{
 		ctr: ctr,
 	}
@@ -39,7 +40,7 @@ func (con *authController) Login(c *gin.Context) {
 	}
 
 	// 验证用户逻辑（示例）
-	us := con.ctr.GetUserService()
+	us := con.ctr.MustGet("authService").(service.AuthService)
 	user, err := us.AuthenticateUser(creds.Account, creds.Password)
 	if err != nil {
 		utils.Error(c, http.StatusUnauthorized, fmt.Sprintf("认证失败：%s\n", err.Error()))
@@ -79,7 +80,7 @@ func (con *authController) Register(c *gin.Context) {
 		return
 	}
 
-	us := con.ctr.GetUserService()
+	us := con.ctr.MustGet("authService").(service.AuthService)
 	if err := us.Register(c, &newUser); err != nil {
 		return
 	}
@@ -108,15 +109,13 @@ func (con *authController) GetProfile(c *gin.Context) {
 		return
 	}
 
-	var user models.User
-	if err := models.DB.First(&user, userID).Error; err != nil {
+	us := con.ctr.MustGet("authService").(service.AuthService)
+	pu, err := us.GetProfile(userID.(int64))
+
+	if err != nil {
 		utils.Error(c, http.StatusNotFound, fmt.Sprintf("用户不存在：%s\n", err.Error()))
 		return
 	}
 
-	utils.Success(c, http.StatusOK, "", &models.ProfileUser{
-		Id:      strconv.FormatInt(user.ID, 10),
-		Name:    user.Name,
-		Account: user.Account,
-	})
+	utils.Success(c, http.StatusOK, "", &pu)
 }

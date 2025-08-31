@@ -5,16 +5,15 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/ix-pay/ixpay/config"
 )
 
 type JwtUtil struct {
 	jwtKey []byte
 }
 
-func SetupJwt(cfg *config.Config) *JwtUtil {
+func SetupJwt(jwtKey string) *JwtUtil {
 	return &JwtUtil{
-		jwtKey: []byte(cfg.JWTSecret),
+		jwtKey: []byte(jwtKey),
 	}
 }
 
