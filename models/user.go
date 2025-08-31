@@ -7,6 +7,12 @@ type User struct {
 	Name     string
 }
 
+type CurrentUser struct {
+	Id      string `json:"id" binding:"required"`
+	Account string `json:"account" binding:"required,min=4"`
+	Name    string `json:"name" binding:"required,min=2"`
+}
+
 type RegisterUser struct {
 	Account  string `json:"account" binding:"required,min=4"`
 	Password string `json:"password" binding:"required,min=8"`

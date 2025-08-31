@@ -23,13 +23,13 @@ func SetupApp() (*App, error) {
 	ctr := container.SetupContainer()
 
 	// 注册服务
-	ctr.Register("AuthService", func() interface{} {
+	ctr.Register(container.AuthServiceName, func() interface{} {
 		return service.NewAuthService()
 	})
-	ctr.Register("UserService", func() interface{} {
+	ctr.Register(container.UserServiceName, func() interface{} {
 		return service.NewUserService()
 	})
-	ctr.Register("PaymentService", func() interface{} {
+	ctr.Register(container.PaymentServiceName, func() interface{} {
 		return service.NewPaymentService()
 	})
 

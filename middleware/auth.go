@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -8,6 +10,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/ix-pay/ixpay/container"
+	"github.com/ix-pay/ixpay/models"
+	"github.com/ix-pay/ixpay/service"
 	"github.com/ix-pay/ixpay/utils"
 )
 
@@ -66,10 +70,50 @@ func JWTAuth(ctr container.IContainer) gin.HandlerFunc {
 			utils.AbortError(c, http.StatusUnauthorized, "token缺少user_id字段")
 			return
 		}
+		user_id := utils.InterfaceToInt64(userID)
 		// 设置用户ID
-		c.Set("userId", userID)
-		log.Printf("userId=%s\n", userID)
+		c.Set("userId", user_id)
+		log.Printf("userId=%d\n", user_id)
 
+		rc := ctr.GetRedis()
+		key := fmt.Sprintf("%s:%d", utils.JwtCurrentUser, user_id)
+		userJson, err := rc.Get(c, key).Result()
+		if err != nil || userJson == "" {
+			us := ctr.MustGet(container.AuthServiceName).(service.AuthService)
+
+			user, err := us.GetCurrentUser(user_id)
+			if err != nil {
+				utils.AbortError(c, http.StatusUnauthorized, "1、用户不存在")
+				return
+			}
+			currentUser := models.CurrentUser{
+				Id:      user.Id,
+				Name:    user.Name,
+				Account: user.Account,
+			}
+			// 写redis
+			userJson, err := json.Marshal(&currentUser)
+			if err != nil {
+				utils.AbortError(c, http.StatusInternalServerError, "服务异常")
+				return
+			}
+			// 写入Redis
+			if err := rc.Set(c, key, userJson, 0).Err(); err != nil {
+				utils.AbortError(c, http.StatusInternalServerError, "服务异常")
+				return
+			}
+			// 将用户信息存入上下文
+			c.Set(utils.JwtCurrentUser, &currentUser)
+		} else {
+			// 反序列化为CurrentUser结构体
+			var currentUser models.CurrentUser
+			if err := json.Unmarshal([]byte(userJson), &currentUser); err != nil {
+				utils.AbortError(c, http.StatusUnauthorized, "2、用户不存在")
+				return
+			}
+			// 将用户信息存入上下文
+			c.Set(utils.JwtCurrentUser, &currentUser)
+		}
 		c.Next()
 	}
 }

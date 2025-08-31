@@ -18,6 +18,7 @@ type AuthService interface {
 	AuthenticateUser(account, password string) (*models.User, error)
 	Register(c *gin.Context, newUser *models.User) error
 	GetProfile(id int64) (*models.ProfileUser, error)
+	GetCurrentUser(id int64) (*models.CurrentUser, error)
 }
 
 type authService struct {
@@ -76,6 +77,18 @@ func (s *authService) GetProfile(id int64) (*models.ProfileUser, error) {
 		return nil, err
 	}
 	return &models.ProfileUser{
+		Id:      strconv.FormatInt(user.ID, 10),
+		Name:    user.Name,
+		Account: user.Account,
+	}, nil
+}
+
+func (s *authService) GetCurrentUser(id int64) (*models.CurrentUser, error) {
+	var user models.User
+	if err := models.DB.First(&user, id).Error; err != nil {
+		return nil, err
+	}
+	return &models.CurrentUser{
 		Id:      strconv.FormatInt(user.ID, 10),
 		Name:    user.Name,
 		Account: user.Account,

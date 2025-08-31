@@ -7,6 +7,10 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+const (
+	JwtCurrentUser = "CurrentUser"
+)
+
 type JwtUtil struct {
 	jwtKey []byte
 }

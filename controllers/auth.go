@@ -40,7 +40,7 @@ func (con *authController) Login(c *gin.Context) {
 	}
 
 	// 验证用户逻辑（示例）
-	us := con.ctr.MustGet("authService").(service.AuthService)
+	us := con.ctr.MustGet(container.AuthServiceName).(service.AuthService)
 	user, err := us.AuthenticateUser(creds.Account, creds.Password)
 	if err != nil {
 		utils.Error(c, http.StatusUnauthorized, fmt.Sprintf("认证失败：%s\n", err.Error()))
@@ -52,6 +52,10 @@ func (con *authController) Login(c *gin.Context) {
 		utils.Error(c, http.StatusInternalServerError, fmt.Sprintf("生成token失败：%s\n", err.Error()))
 		return
 	}
+	// 删除旧的登录缓存
+	key := fmt.Sprintf("%s:%s", utils.JwtCurrentUser, strconv.FormatInt(user.ID, 10))
+	rc := con.ctr.GetRedis()
+	rc.Del(c, key)
 
 	utils.Success(c, http.StatusOK, "", &models.TokenUser{
 		Token: token,
@@ -80,7 +84,7 @@ func (con *authController) Register(c *gin.Context) {
 		return
 	}
 
-	us := con.ctr.MustGet("authService").(service.AuthService)
+	us := con.ctr.MustGet(container.AuthServiceName).(service.AuthService)
 	if err := us.Register(c, &newUser); err != nil {
 		return
 	}
@@ -109,8 +113,8 @@ func (con *authController) GetProfile(c *gin.Context) {
 		return
 	}
 
-	us := con.ctr.MustGet("authService").(service.AuthService)
-	pu, err := us.GetProfile(userID.(int64))
+	us := con.ctr.MustGet(container.AuthServiceName).(service.AuthService)
+	pu, err := us.GetProfile(utils.InterfaceToInt64(userID))
 
 	if err != nil {
 		utils.Error(c, http.StatusNotFound, fmt.Sprintf("用户不存在：%s\n", err.Error()))
